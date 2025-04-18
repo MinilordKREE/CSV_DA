@@ -54,7 +54,7 @@ class JSONHistory:
         "output": str,      # preview of output_data
         "explain": str
     }
-    Stored as a list in <chat_dir>/hist_<hash>.json
+    Stored as a list in src/history/chat_history/hist_<hash>.json
     """
 
     def __init__(self, file_path: Path):

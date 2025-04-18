@@ -1,11 +1,11 @@
 import json, textwrap, hashlib
 from datetime import datetime, timezone
 from pathlib import Path
-from .data_analyzer import file_handler, executor
-from .reporter import answerer
-from .prompts import builder
-from .code_generator import llm_wrapper
-from .utils import json_history as jh
+from .analysis import file_handler
+from .analysis.sandbox import sandbox_runner
+from .llm.prompts import builder
+from .llm import llm_wrapper
+from .history import json_history as jh
 
 MAX_RETRY = 3
 session_tag = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
@@ -13,8 +13,11 @@ session_tag = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
 def run_session(csv_path: str):
     _, summary = file_handler.load_csv(csv_path)  # df no longer needed on host
     # -------- persistent history file per CSV --------
+    chat_history_dir = Path("src/history/chat_history")
+    chat_history_dir.mkdir(parents=True, exist_ok=True)
+    
     h = hashlib.md5(str(csv_path).encode()).hexdigest()[:8]
-    hist_path = Path("src/chat_history") / f"hist_{h}_{session_tag}.json"
+    hist_path = chat_history_dir / f"hist_{h}_{session_tag}.json"
     hist = jh.JSONHistory(hist_path)
     hist_logger = jh.make_logger(name_suffix=session_tag, level=jh.logging.DEBUG)
 
@@ -49,7 +52,7 @@ def run_session(csv_path: str):
             hist.log_response(code)
 
             print(f"\nGenerated code (attempt {attempt}):\n{code}\n{'-'*40}")
-            stdout, ret_obj, plots, error = executor.try_run(code, csv_path)
+            stdout, ret_obj, plots, error = sandbox_runner.try_run(code, csv_path)
 
             # always pre‑compute preview strings (empty if N/A)
             output_preview = (
@@ -68,7 +71,7 @@ def run_session(csv_path: str):
                 if ret_obj is not None:
                     combined_output += "\n\noutput_data = " + json.dumps(ret_obj, ensure_ascii=False)
 
-                nl_answer = answerer.answer(
+                nl_answer = llm_wrapper.answer(
                     question=question,
                     summary=summary,
                     code=code,              

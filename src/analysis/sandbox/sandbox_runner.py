@@ -1,6 +1,7 @@
 """
 Launch a one-shot sandbox container, run LLM code, pull result.json.
 """
+from __future__ import annotations
 import json, shutil, tempfile
 from pathlib import Path
 
@@ -83,3 +84,14 @@ def run_in_sandbox(code: str,
         except Exception:
             pass
         shutil.rmtree(tmp_dir, ignore_errors=True)
+
+def try_run(code: str, csv_path: str):
+    try:
+        r = run_in_sandbox(code, csv_path)
+        error = r["error"]
+        stdout = r["stdout"]
+        ret    = r["return_obj"]
+        plots  = r["plots"]
+        return (stdout, ret, plots, error)
+    except Exception as e:
+        return ("", None, [], str(e))

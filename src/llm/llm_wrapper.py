@@ -1,6 +1,7 @@
 from typing import List
-from ..utils import config
+from .. import config
 import re
+from .prompts import builder
 
 if config.MODEL_BACKEND == "openai":
     import openai
@@ -48,3 +49,18 @@ def code_catch(llm_out: str) -> str:
         return m.group(1).strip()
     # fallback if the model didn't use fences at all
     return llm_out.replace("```", "").strip()
+
+def answer(
+    question: str,
+    summary: dict,
+    code: str,
+    output: str,
+    history_blob: str = "",
+) -> str:
+    """
+    Build the full-context answer prompt and get the LLM's natural-language reply.
+    """
+    msgs = builder.build_answer_prompt(
+        question, summary, code, output, history_blob
+    )
+    return chat(msgs)
