@@ -51,5 +51,5 @@ python -m src.main
 *step1: enter the csv file that you want to analyze*<br>
 ![alt text](image/csv.png)
 
-*step2: enter the question about the data*
+*step2: enter the question about the data and get your answer!*
 ![alt text](image/question.png)
