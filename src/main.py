@@ -1,14 +1,15 @@
-import textwrap
+import json, textwrap
 from .data_analyzer import file_handler, executor
-from .code_generator import llm_wrapper
 from .reporter import answerer
 from .prompts import builder
+from .code_generator import llm_wrapper
+from .utils.guard import looks_suspicious
 
 MAX_RETRY = 3
 
 def run_session(csv_path: str):
-    df, summary = file_handler.load_csv(csv_path)
-    history = []  # (question, code, output) triples
+    _, summary = file_handler.load_csv(csv_path)  # df no longer needed on host
+    history = []
 
     while True:
         question = input("\n📝 Ask a data question (or 'exit'): ").strip()
@@ -16,18 +17,34 @@ def run_session(csv_path: str):
             break
 
         error = None
-        for attempt in range(1, MAX_RETRY+1):
+        for attempt in range(1, MAX_RETRY + 1):
             msgs = builder.build_code_prompt(question, summary, error)
             code = llm_wrapper.chat(msgs)
 
+            if looks_suspicious(code):
+                error = "Code tries to build its own DataFrame or read the CSV."
+                print("🚫  Guard rejected generated code – asking LLM to fix it.")
+                continue 
+
             print(f"\nGenerated code (attempt {attempt}):\n{code}\n{'-'*40}")
-            output, error = executor.try_run(code, df)
+            stdout, ret_obj, plots, error = executor.try_run(code, csv_path)
 
             if not error:
-                print(f"✅ Output:\n{textwrap.indent(output, '   ')}")
-                nl_answer = answerer.answer(question, output)
+                # Short preview of structured output, if any
+                if ret_obj is not None:
+                    preview = json.dumps(ret_obj, ensure_ascii=False, indent=2)[:300]
+                    print(f"🗂️  output_data preview:\n{textwrap.indent(preview, '   ')}")
+                if plots:
+                    print(f"🖼️  Plots saved: {plots}")
+
+                # For the LLM’s narrative we pass stdout + ret_obj (stringified)
+                combined_output = stdout
+                if ret_obj is not None:
+                    combined_output += "\n\noutput_data = " + json.dumps(ret_obj, ensure_ascii=False)
+
+                nl_answer = answerer.answer(question, combined_output)
                 print(f"🗨️  {nl_answer}")
-                history.append((question, code, output))
+                history.append((question, code, combined_output))
                 break
             else:
                 print(f"⚠️  Error:\n{textwrap.indent(error, '   ')}")

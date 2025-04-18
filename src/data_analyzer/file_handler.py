@@ -5,10 +5,19 @@ def load_csv(path: str):
     p = Path(path).expanduser().resolve()
     if not p.exists() or p.suffix.lower() != ".csv":
         raise FileNotFoundError(f"{p} is not a valid CSV")
+
     df = pd.read_csv(p)
+
+    # -------- lightweight schema summary sent to the LLM --------
+    dtypes = {c: str(t) for c, t in df.dtypes.items()}
+    numeric_cols = [c for c in df.columns if pd.api.types.is_numeric_dtype(df[c])]
+
     summary = {
+        "path": str(p),                       # useful for logs, not for the LLM
         "columns": df.columns.tolist(),
         "rows": len(df),
-        "head": df.head(5).to_dict(orient="records")
+        "dtypes": dtypes,
+        "numeric_cols": numeric_cols,
+        "head": df.head(5).to_dict(orient="records"),
     }
     return df, summary

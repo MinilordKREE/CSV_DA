@@ -3,7 +3,7 @@ from pathlib import Path
 
 # -------- runtime flags --------
 MODEL_BACKEND = os.getenv("CSV_DA_MODEL", "openai")
-DEFAULT_OPENAI_MODEL = "gpt-3.5-turbo"
+DEFAULT_OPENAI_MODEL = "gpt-4o-mini"
 DEFAULT_HF_MODEL     = "Qwen/Qwen1.5-7B-Chat"
 MAX_LLM_TOKENS       = 2048
 TEMPERATURE          = 0
