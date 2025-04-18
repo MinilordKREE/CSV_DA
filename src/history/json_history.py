@@ -9,6 +9,9 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import List, Dict
 
+def _now_tag():
+    return datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
+
 # Default directories and logging setup
 ROOT_DIR = Path(__file__).resolve().parents[2]
 DEFAULT_LOG_DIR = ROOT_DIR / "log"
@@ -70,29 +73,59 @@ class JSONHistory:
             self._save([])
 
     def _load(self) -> List[Dict]:
-        """Load all rows from the history file."""
+        """
+        Load all rows from the history file, resetting it if corrupted.
+        """
         try:
             return json.loads(self.path.read_text(encoding="utf-8"))
-        except json.JSONDecodeError:
+        except Exception as e:
+            logger.error(f"History file corrupted, resetting. {e}")
+            self._save([])
             return []
 
     def _save(self, rows: List[Dict]):
-        """Save all rows back to the history file."""
+        """
+        Save all rows back to the history file.
+        """
         self.path.write_text(
             json.dumps(rows, ensure_ascii=False, indent=2), encoding="utf-8"
         )
 
     @property
     def rows(self) -> List[Dict]:
-        """Retrieve all rows."""
         return self._load()
 
+    def tail(self, n: int) -> List[Dict]:
+        """
+        Retrieve the last 'n' rows of history.
+        """
+        return self.rows[-n:]
+
     def append(self, row: Dict):
-        """Add a new row to the history file."""
+        """
+        Add a new row to the history file.
+        """
         data = self._load()
         data.append(row)
         self._save(data)
+        logger.info(f"History appended (total {len(data)} rows).")
 
     def clear(self):
-        """Clear all entries from the history file."""
+        """
+        Clear all entries from the history file.
+        """
         self._save([])
+        logger.info("History cleared.")
+
+
+    def log_prompt(self, prompt: str):
+        """
+        Log the prompt text for debugging purposes.
+        """
+        logger.debug(f"\n---- PROMPT ---------------------------------\n{prompt}\n")
+
+    def log_response(self, response: str):
+        """
+        Log the response text for debugging purposes.
+        """
+        logger.debug(f"\n---- RESPONSE -------------------------------\n{response}\n")
