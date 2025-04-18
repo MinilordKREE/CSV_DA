@@ -7,30 +7,38 @@ from .llm.prompts import builder
 from .llm import llm_wrapper
 from .history import json_history as jh
 
+# Constants
+# Maximum number of retries for code generation
 MAX_RETRY = 3
 session_tag = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
 
 def run_session(csv_path: str):
-    _, summary = file_handler.load_csv(csv_path)  # df no longer needed on host
-    # -------- persistent history file per CSV --------
+    # Load the CSV and generate a summary for the data
+    _, summary = file_handler.load_csv(csv_path)
+
+
+    # Create the directory for storing chat history if it doesn't exist
     chat_history_dir = Path("src/history/chat_history")
     chat_history_dir.mkdir(parents=True, exist_ok=True)
-    
+
+    # Logger for the chat history
     h = hashlib.md5(str(csv_path).encode()).hexdigest()[:8]
     hist_path = chat_history_dir / f"hist_{h}_{session_tag}.json"
     hist = jh.JSONHistory(hist_path)
     hist_logger = jh.make_logger(name_suffix=session_tag, level=jh.logging.DEBUG)
-
     jh.logger = hist_logger
-    TAIL_N = 5
 
+    TAIL_N = 5 # Number of recent entries for context
+
+    # Main loop to accept user questions and interact with the system
     while True:
         question = input("\n📝 Ask a data question (or 'exit'): ").strip()
         if question.lower() in {"exit", "quit"}:
             break
 
         error = None
-        # build memory blob
+        # Construct a memory blob containing recent Q&A pairs 
+        # and code/excution information for context
         memory_blob = "\n\n".join(
             f"Q: {r['question']}\n"
             f"Code: {r['code']}\n"
@@ -39,7 +47,9 @@ def run_session(csv_path: str):
             for r in hist.tail(TAIL_N)
         )
 
+        # Main loop to accept user questions and interact with the system
         for attempt in range(1, MAX_RETRY + 1):
+            # Generate code using the LLM
             msgs = builder.build_code_prompt(question, summary, memory_blob)
             if attempt == 1 or error is None:
                 code = llm_wrapper.chat(msgs)
@@ -52,9 +62,10 @@ def run_session(csv_path: str):
             hist.log_response(code)
 
             print(f"\nGenerated code (attempt {attempt}):\n{code}\n{'-'*40}")
+            # Run the generated code in a sandbox environment
+            # and capture the output
             stdout, ret_obj, plots, error = sandbox_runner.try_run(code, csv_path)
 
-            # always pre‑compute preview strings (empty if N/A)
             output_preview = (
                 json.dumps(ret_obj, ensure_ascii=False) if ret_obj else ""
             )
@@ -66,11 +77,13 @@ def run_session(csv_path: str):
                 if plots:
                     print(f"🖼️  Plots saved: {plots}")
 
-                # For the LLM’s narrative we pass stdout + ret_obj (stringified)
                 combined_output = stdout
                 if ret_obj is not None:
                     combined_output += "\n\noutput_data = " + json.dumps(ret_obj, ensure_ascii=False)
 
+
+                # Generate a natural language answer of the query based on the code and output
+                # history/and data information
                 nl_answer = llm_wrapper.answer(
                     question=question,
                     summary=summary,
@@ -92,9 +105,9 @@ def run_session(csv_path: str):
                  )
                 break
             else:
-                print(f"⚠️  Error:\n{textwrap.indent(error, '   ')}")
+                print(f"Error:\n{textwrap.indent(error, '   ')}")
         else:
-            print("❌ Failed after retries.")
+            print("Failed after retries.")
 
 if __name__ == "__main__":
     csv = input("Path to CSV: ").strip()

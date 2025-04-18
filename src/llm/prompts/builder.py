@@ -2,19 +2,26 @@ from . import templates as T
 import json
 
 def _schema_from_summary(summary: dict) -> dict:
-    """Convert the lightweight summary dict returned by `file_handler`
-    into the JSON block we want to show the LLM."""
+    """
+    Convert the data summary into the JSON structure expected by the LLM.
+    """
     return {
         "n_rows": summary["rows"],
         "columns": summary["columns"],
         "dtypes": summary["dtypes"],
         "numeric_cols": summary["numeric_cols"],
-        "head": summary["head"],  # first 5 rows so the LLM “sees” examples
+        "head": summary["head"],  # First 5 rows for reference
     }
 
-def build_code_prompt(question: str, summary: dict, memory: str = "") -> list[dict]:
+def build_code_prompt(
+    question: str, 
+    summary: dict, 
+    memory: str = ""
+) -> list[dict]:
+    """
+    Create a prompt for generating code based on the provided question, summary, and memory.
+    """
     schema = _schema_from_summary(summary)  
-
     code_msg = ""
     if memory:
         code_msg += ( "Here is the conversation/code history you must take into account:\n"
@@ -36,11 +43,12 @@ def build_debug_prompt(
     question: str,
     summary: dict,
     error: str,
-    memory: str = "",
+    memory: str = ""
 ) -> list[dict]:
-    
+    """
+    Create a debug prompt using the error message, question, summary, and memory context.
+    """
     schema = _schema_from_summary(summary)
-
     debug_msg = ""
     if memory:
         debug_msg += ("Conversation/code history:\n" + memory + "\n\n")
@@ -65,9 +73,10 @@ def build_answer_prompt(
     output: str,
     history_blob: str = "",
 ) -> list[dict]:
-
+    """
+    Construct a full-context prompt for answering the given question.
+    """
     schema = _schema_from_summary(summary)
-
     parts = []
     if history_blob:
         parts.append("Conversation context:\n" + history_blob)
