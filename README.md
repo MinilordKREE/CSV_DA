@@ -11,7 +11,7 @@ It works by
 
 ---
 
-## Repo layout
+## **Repo layout**
 
 ```text
 src/
