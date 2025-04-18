@@ -48,7 +48,7 @@ python -m src.main
 ```
 
 **Steps**
-*step1: enter the csv file that you want to analyze*
+*step1: enter the csv file that you want to analyze*<br>
 ![alt text](image/csv.png)
 
 *step2: enter the question about the data*
