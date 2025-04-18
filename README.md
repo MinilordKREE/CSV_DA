@@ -28,6 +28,7 @@ src/
 
 Makefile               ← `make docker` builds sandbox image
 requirements.txt       ← python env
+```
 
 ---
 
@@ -41,3 +42,4 @@ make docker
 
 # run the CLI
 python -m src.main
+```
