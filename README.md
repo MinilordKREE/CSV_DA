@@ -1,4 +1,4 @@
-# CSV‑DA 📊🤖
+# CSV‑DA
 
 **CSV‑DA (CSV Data‑Analysis assistant)** is a command‑line tool that lets you query any CSV file in *plain language* and receive reliable answers backed by executable Python.
 
@@ -11,7 +11,7 @@ It works by
 
 ---
 
-## 🗂️ Repo layout
+## Repo layout
 
 ```text
 src/
