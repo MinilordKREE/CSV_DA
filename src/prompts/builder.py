@@ -1,31 +1,84 @@
 from . import templates as T
 import json
 
-def build_code_prompt(question: str, summary: dict, error: str | None = None):
-    schema = {
+def _schema_from_summary(summary: dict) -> dict:
+    """Convert the lightweight summary dict returned by `file_handler`
+    into the JSON block we want to show the LLM."""
+    return {
         "n_rows": summary["rows"],
         "columns": summary["columns"],
         "dtypes": summary["dtypes"],
         "numeric_cols": summary["numeric_cols"],
-        "head": summary["head"],          # first 5 rows so the LLM “sees” examples
+        "head": summary["head"],  # first 5 rows so the LLM “sees” examples
     }
 
-    user_msg = (
+def build_code_prompt(question: str, summary: dict, memory: str = "") -> list[dict]:
+    schema = _schema_from_summary(summary)  
+
+    code_msg = ""
+    if memory:
+        code_msg += ( "Here is the conversation/code history you must take into account:\n"
+                    f"{memory}\n\n"
+        )
+    code_msg += (
         "You are given the following DataFrame summary (as JSON):\n"
         f"{json.dumps(schema, indent=2)}\n\n"
         f"**Task:** {question}\n\n"
         "Write Python code now."
     )
-    if error:
-        user_msg += T.DEBUG_SUFFIX.format(error=error)
 
     return [
         {"role": "system", "content": T.SYSTEM_CODE},
-        {"role": "user",   "content": user_msg},
+        {"role": "user",   "content": code_msg},
     ]
 
-def build_answer_prompt(question: str, output: str):
+def build_debug_prompt(
+    question: str,
+    summary: dict,
+    error: str,
+    memory: str = "",
+) -> list[dict]:
+    
+    schema = _schema_from_summary(summary)
+
+    debug_msg = ""
+    if memory:
+        debug_msg += ("Conversation/code history:\n" + memory + "\n\n")
+    debug_msg += (
+        "Your previous code crashed with this traceback:\n"
+        f"{error}\n\n"
+        "You are given the following DataFrame summary (as JSON):\n"
+        f"{json.dumps(schema, indent=2)}\n\n"
+        f"**Task (retry):** {question}\n\n"
+        "Fix the code and reply with **ONLY executable Python**."
+    )
+
+    return [
+        {"role": "system", "content": T.SYSTEM_CODE},
+        {"role": "user",   "content": debug_msg},
+    ]
+
+def build_answer_prompt(
+    question: str,
+    summary: dict,
+    code: str,
+    output: str,
+    history_blob: str = "",
+) -> list[dict]:
+
+    schema = _schema_from_summary(summary)
+
+    parts = []
+    if history_blob:
+        parts.append("Conversation context:\n" + history_blob)
+
+    parts.append(
+        "You are given the following DataFrame summary (as JSON):\n"
+        f"{json.dumps(schema, indent=2)}\n\n"
+        + T.ANSWER_TEMPLATE.format(question=question, code=code, output=output)
+    )
+
     return [
         {"role": "system", "content": "You are an assistant who explains data insights clearly."},
-        {"role": "user",   "content": T.ANSWER_TEMPLATE.format(question=question, output=output)},
+        {"role": "user",   "content": "\n\n".join(parts)},
     ]

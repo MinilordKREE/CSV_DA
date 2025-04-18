@@ -1,9 +1,9 @@
 """
-Run LLM‑generated code in a throw‑away namespace.
+Run LLM-generated code in a throw-away namespace.
 
 Expected env vars:
 - USER_CODE : path to a .py file containing the code to exec
-- CSV_PATH  : path to CSV (mounted read‑only)
+- CSV_PATH  : path to CSV (mounted read-only)
 Outputs:
 - /workspace/out/result.json  (containing 'stdout', 'error', 'return_obj', 'plots')
 """
@@ -11,20 +11,14 @@ import json, io, contextlib, importlib.util, traceback, os, sys, types, uuid, in
 from pathlib import Path
 
 SAFE_BUILTINS = {
-    "range": range, "len": len, "sum": sum, "min": min, "max": max,
-    "abs":  abs,  "print": print, "int": int, "float": float, "str": str, 
+    "abs": abs, "min": min, "max": max, "sum": sum,
+    "range": range, "len": len, "print": print,
+    "int": int, "float": float, "str": str,
     "list": list, "dict": dict, "tuple": tuple, "set": set,
-    "enumerate": enumerate, "zip": zip, "map": map, "filter": filter,
-    "sorted": sorted, "reversed": reversed,
-    "any": any, "all": all, "sum": sum, "round": round,
-    "open": open, "os": os, "sys": sys, "uuid": uuid,
-    "inspect": inspect, "types": types, "Path": Path,
-    "importlib": importlib, "json": json, "contextlib": contextlib,
-    "io": io, "traceback": traceback,
-    "pd": None, 
-    "plt": None, 
-    "np": None, 
+    "enumerate": enumerate, "zip": zip, "sorted": sorted, "reversed": reversed,
+    "any": any, "all": all, "round": round,
 }
+
 
 def run_user(code_text: str, local_ctx: dict):
     g = {"__builtins__": SAFE_BUILTINS, **local_ctx}
@@ -32,7 +26,7 @@ def run_user(code_text: str, local_ctx: dict):
     err = ""
     try:
         with contextlib.redirect_stdout(out_buf):
-            exec(code_text, g, {})
+            exec(code_text, g)
     except Exception:
         err = traceback.format_exc()
     return out_buf.getvalue(), err, g.get("output_data")

@@ -1,5 +1,5 @@
 """
-Launch a one‑shot sandbox container, run LLM code, pull result.json.
+Launch a one-shot sandbox container, run LLM code, pull result.json.
 """
 import json, shutil, tempfile
 from pathlib import Path
