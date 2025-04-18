@@ -1,3 +1,4 @@
 src/history/chat_history/
 log/
 __pycache__/
+*.py[cod]
