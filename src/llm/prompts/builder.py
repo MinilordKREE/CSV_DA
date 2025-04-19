@@ -43,6 +43,7 @@ def build_debug_prompt(
     question: str,
     summary: dict,
     error: str,
+    previous_code: str,
     memory: str = ""
 ) -> list[dict]:
     """
@@ -53,12 +54,17 @@ def build_debug_prompt(
     if memory:
         debug_msg += ("Conversation/code history:\n" + memory + "\n\n")
     debug_msg += (
-        "Your previous code crashed with this traceback:\n"
+        "Here is the code that just failed:\n"
+        f"```python\n{previous_code}\n```\n\n"
+        "The traceback was:\n"
         f"{error}\n\n"
         "You are given the following DataFrame summary (as JSON):\n"
         f"{json.dumps(schema, indent=2)}\n\n"
         f"**Task (retry):** {question}\n\n"
-        "Fix the code and reply with **ONLY executable Python**."
+        "Fix the code and reply with **ONLY executable Python**.\n"
+        "**If the traceback shows a missing‑package or NameError for an undefined "
+        "module/alias, prepend the appropriate `import …` statement(s) at the very top "
+        "of your code.**"
     )
 
     return [
