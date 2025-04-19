@@ -7,5 +7,4 @@ openai
 pytz
 matplotlib
 torch
-transformers
 docker
