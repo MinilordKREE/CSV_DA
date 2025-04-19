@@ -35,7 +35,7 @@ requirements.txt       ← python env
 **Quick Start**
 
 ```bash
-cd CSV‑DA
+cd CSV_DA
 ```
 
 ```bash
