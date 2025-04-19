@@ -80,3 +80,7 @@ python -m src.main
 
 *step2: Ask questions in natural language – the assistant writes & executes code, then explains the result.*
 ![alt text](image/question.png)
+
+*step3(optional): you can also try to ask the asistant to draw a hist plot for you!*
+![alt text](image/plot.png)
+![alt text](/image/clothing_sales_trend.png)

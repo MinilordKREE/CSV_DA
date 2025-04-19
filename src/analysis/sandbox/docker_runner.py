@@ -6,6 +6,8 @@ import docker
 
 client = docker.from_env()
 
+# Generated plot will be saved here
+EXPORT_PLOTS_DIR = Path("exports/plots")
 
 def run_in_sandbox(
     code: str, 
@@ -78,6 +80,17 @@ def run_in_sandbox(
         result["plots"] = [
             str(out_dir / Path(p).name) for p in result.get("plots", [])
         ]
+
+        if result["plots"]:
+            EXPORT_PLOTS_DIR.mkdir(parents=True, exist_ok=True)
+            new_paths = []
+            for plot in result["plots"]:
+                src = Path(plot)
+                if src.exists():
+                    dest = EXPORT_PLOTS_DIR / src.name
+                    shutil.copy2(src, dest)
+                    new_paths.append(str(dest))
+            result["plots"] = new_paths
         return result
 
     finally:

@@ -12,6 +12,7 @@ SAFE_BUILTINS = {
     "list": list, "dict": dict, "tuple": tuple, "set": set,
     "enumerate": enumerate, "zip": zip, "sorted": sorted, "reversed": reversed,
     "any": any, "all": all, "round": round,
+    "__import__": __import__,
 }
 
 
@@ -54,7 +55,14 @@ def main():
         error = traceback.format_exc()
     finally:
         # Save results
-        plot_files = [str(p) for p in Path(".").glob("*.png")]
+        pngs = list(Path("/workspace").rglob("*.png"))
+        for p in pngs:
+            target = out_dir / p.name
+            try:
+                p.replace(target)
+            except Exception:
+                pass
+        plot_files = [str(p) for p in out_dir.glob("*.png")]
         result = dict(stdout=stdout, error=error,
                       return_obj=ret_obj, plots=plot_files)
         (out_dir / "result.json").write_text(json.dumps(result, ensure_ascii=False))
