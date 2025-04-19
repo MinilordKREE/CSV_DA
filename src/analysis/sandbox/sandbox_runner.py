@@ -1,10 +1,12 @@
 """
-Public façade (`try_run`) that auto‑selects Docker or Local backend.
+auto-selects Docker or Local backend.
 """
 from __future__ import annotations
 import shutil, importlib.util, importlib
 import sys, os 
 
+# Check if user wants to force local execution
+# Check if Docker is available 
 if os.getenv("CSV_DA_FORCE_LOCAL"): 
     from . import local_runner as _backend
     _USING_DOCKER = False

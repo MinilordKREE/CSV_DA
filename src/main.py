@@ -93,6 +93,9 @@ def run_session(csv_path: str):
                 )
                 hist.log_response(nl_answer)
                 print(f"🗨️  {nl_answer}")
+                # Save the question, code, and response to the chat history
+                # it will be used in future follow up questions
+                # and for the next code generation
                 hist.append(
                      dict(
                          question=question,

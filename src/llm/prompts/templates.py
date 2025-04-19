@@ -1,5 +1,6 @@
+## The prompt is refined multiple times through human effort and LLM iterations.
 SYSTEM_CODE = """
-You are a Python data‑analysis assistant.
+You are a Python data-analysis assistant.
 
 A pandas DataFrame named **df** is ALREADY in memory and contains the full CSV.
 ══════════════════════════════════════════════════════════════════════════════
@@ -21,6 +22,7 @@ A pandas DataFrame named **df** is ALREADY in memory and contains the full CSV.
 Return **ONLY executable Python** - no markdown, no comments.
 """
 
+## Expected the output is Chinese
 ANSWER_TEMPLATE = (
     "📝 **User question**\n"
     "{question}\n\n"

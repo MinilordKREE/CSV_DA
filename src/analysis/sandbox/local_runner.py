@@ -1,6 +1,6 @@
 """
 Light-weight fallback when Docker is unavailable.
-⚠️  Not a hard security boundary – use with trusted code only.
+!!!! Not a hard security boundary - use with trusted code only.
 """
 from __future__ import annotations
 import json, io, contextlib, traceback, tempfile, shutil, sys, os, signal, resource, subprocess, builtins

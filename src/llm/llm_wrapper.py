@@ -7,11 +7,14 @@ import openai
 if config.MODEL_BACKEND == "openai":
     openai.api_key = config.OPENAI_API_KEY
 else:  # huggingface
+    # However, this is not implemented in this demo
     from transformers import AutoModelForCausalLM, AutoTokenizer, pipeline
     _tokenizer = AutoTokenizer.from_pretrained(config.DEFAULT_HF_MODEL, token=config.HF_ACCESS_TOKEN)
     _model     = AutoModelForCausalLM.from_pretrained(config.DEFAULT_HF_MODEL, token=config.HF_ACCESS_TOKEN, device_map="auto")
     _pipe      = pipeline("text-generation", model=_model, tokenizer=_tokenizer)
 
+
+# code is easily extracted due to the consistent formatting of the gpt output
 FENCE = re.compile(r"```(?:python)?\s*([\s\S]*?)```", re.I)
 
 
@@ -28,12 +31,8 @@ def chat(messages: List[dict]) -> str:
         )
         return code_catch(resp["choices"][0]["message"]["content"])
     else:
-        # Single-shot HF chat: concatenate messages into a single prompt
-        prompt = ""
-        for m in messages:
-            prompt += f"<|{m['role']}|>{m['content']}\n"
-        gen = _pipe(prompt, max_new_tokens=512, do_sample=False)[0]["generated_text"]
-        return gen[len(prompt):]  # crude split
+        # Huggingface model handling is not implemented in this demo
+        pass 
 
 def code_catch(llm_out: str) -> str:
     """

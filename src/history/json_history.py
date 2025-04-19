@@ -9,9 +9,6 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import List, Dict
 
-def _now_tag():
-    return datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
-
 # Default directories and logging setup
 ROOT_DIR = Path(__file__).resolve().parents[2]
 DEFAULT_LOG_DIR = ROOT_DIR / "log"
