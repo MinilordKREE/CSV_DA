@@ -1,6 +1,5 @@
 """
-Execute a read‑only SQL query against the per‑session sqlite DB
-and produce the same result contract as the Python sandbox.
+Execute a read-only SQL query against the per-session sqlite DB
 """
 from __future__ import annotations
 import sqlite3, json, traceback, tempfile, shutil
@@ -25,8 +24,5 @@ def _run_query(db_path: str, query: str, timeout_steps: int = 100_000):
 
 
 def try_run_sql(sql: str, db_path: str):
-    """
-    API-compatible with sandbox_runner.try_run.
-    """
     stdout, rows, err = _run_query(db_path, sql)
     return stdout, rows, [], err  # plots list left empty
