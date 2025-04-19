@@ -15,19 +15,21 @@ It works by
 
 ```text
 src/
-├─ analysis/           ← data loading, sandbox runner, Docker
+├─ analysis/            ← data loading & sandbox runners
 │   └─ sandbox/
-│   │    ├─ docker/      ← Dockerfile + entry script
-│   │       └─ sandbox_entry.py & Dockerfile
-│   └─ sandbox_runner.py
-├─ history/            ← chat history & logger
-├─ llm/                ← model wrapper + prompt builders
-├─ config.py           ← runtime settings (env‑driven)
-├─ main.py             ← CLI entry point
+│       ├─ docker/      ← Dockerfile + `sandbox_entry.py`
+│       ├─ docker_runner.py
+│       └─ local_runner.py
+│       └─ sandbox_runner.py      ← auto‑selects docker ↔ local
+├─ history/             ← chat history & rotating logger
+├─ llm/                 ← model wrapper + prompt builders
+├─ config.py            ← runtime settings (env vars)
+├─ main.py              ← CLI entry point
 └─ __init__.py    
 
-Makefile               ← `make docker` builds sandbox image
-requirements.txt       ← python env
+Makefile                ← `make docker` builds sandbox image
+requirements.txt        ← Python deps (incl. *docker* SDK)
+README.md               ← this file
 ```
 
 ---
@@ -42,22 +44,39 @@ cd CSV_DA
 # install the package
 conda create --name csv_da
 conda activate csv_da
-pip install -r requirements.txt
+
+# install python deps (incl. docker‑python)
+(csv_da) $ pip install -r requirements.txt
 ```
 ```bash
 # export your openai api key first
-export OPENAI_API_KEY=""
+export OPENAI_API_KEY="sk-…"
+```
 
-# build the sandbox image
-make docker
+## Choose your sandbox flavour
+### A) Docker (recommended)
+    Gives the strongest isolation.
+    Requires Docker daemon running and your user in the docker group
 
+```bash
+(csv_da) $ make docker 
+(csv_da) $ python -m src.main # you will see:
+🐳  Using **Docker** sandbox (image csv_da_sandbox).
+```
+### B) Local fallback (no Docker available)
+    If the Docker daemon is missing, stopped, or the Python docker SDK cannot ping it, CSV‑DA automatically switches to a lightweight runner.
+    Executes user code in a temporary folder.
+```bash
+(csv_da) $ python -m src.main # you will see:
+⚠️  Docker not available → using **LOCAL** sandbox (limited isolation).
+```
 # run the CLI
 python -m src.main
-```
+
 
 **Steps**
 *step1: enter the csv file that you want to analyze*<br>
 ![alt text](image/csv.png)
 
-*step2: enter the question about the data and get your answer!*
+*step2: Ask questions in natural language – the assistant writes & executes code, then explains the result.*
 ![alt text](image/question.png)
