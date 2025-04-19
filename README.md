@@ -15,21 +15,28 @@ It works by
 
 ```text
 src/
-├─ analysis/            ← data loading & sandbox runners
-│   └─ sandbox/
-│       ├─ docker/      ← Dockerfile + `sandbox_entry.py`
-│       ├─ docker_runner.py
-│       └─ local_runner.py
-│       └─ sandbox_runner.py      ← auto‑selects docker ↔ local
-├─ history/             ← chat history & rotating logger
-├─ llm/                 ← model wrapper + prompt builders
-├─ config.py            ← runtime settings (env vars)
-├─ main.py              ← CLI entry point
-└─ __init__.py    
+├─ analysis/                
+│   ├─ db_utils.py                ← CSV-to-SQLite helper
+│   ├─ file_handler.py            ← CSV loader + summary
+│   └─ sandbox/ 
+│       ├─ docker/             
+│       │   ├─ Dockerfile         ← sandbox image definition
+│       │   ├─ sandbox_entry.py   ← Python sandbox entrypoint
+│       │   └─ sql_driver.py      ← SQL-mode runner inside container
+│       ├─ docker_runner.py       ← Python-mode Docker runner
+│       ├─ local_runner.py        ← Python-mode local runner
+│       ├─ sandbox_runner.py      ← auto-select Docker vs local
+│       ├─ sql_docker_runner.py   ← SQL-mode Docker runner
+│       └─ sql_local_runner.py    ← SQL-mode local runner
+├─ history/                        ← chat history & rotating logger
+├─ llm/                            ← model wrapper + prompt builders
+├─ config.py                       
+├─ main.py                         ← CLI entry point
+└─ __init__.py                     
 
-Makefile                ← `make docker` builds sandbox image
-requirements.txt        ← Python deps (incl. *docker* SDK)
-README.md               ← this file
+Makefile                            ← `make docker` builds sandbox image
+requirements.txt                   
+README.md                           ← this file
 ```
 
 ---
@@ -76,6 +83,9 @@ python -m src.main
 
 
 **Steps**
+*step0: choose your answering mod. This asistant support python or sql answering style which you can pick whatever you want.*
+![alt text](image/mode.png)
+
 *step1: enter the csv file that you want to analyze*<br>
 ![alt text](image/csv.png)
 
