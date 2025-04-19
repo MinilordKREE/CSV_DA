@@ -40,6 +40,8 @@ cd CSV_DA
 
 ```bash
 # install the package
+conda create --name csv_da
+conda activate csv_da
 pip install -r requirements.txt
 ```
 ```bash
