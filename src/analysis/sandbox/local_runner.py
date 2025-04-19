@@ -3,7 +3,7 @@ Light-weight fallback when Docker is unavailable.
 ⚠️  Not a hard security boundary – use with trusted code only.
 """
 from __future__ import annotations
-import json, io, contextlib, traceback, tempfile, shutil, sys, os, signal, resource, subprocess
+import json, io, contextlib, traceback, tempfile, shutil, sys, os, signal, resource, subprocess, builtins
 from pathlib import Path
 from typing import Dict, Any
 
@@ -14,6 +14,7 @@ SAFE_BUILTINS = {
     "list": list, "dict": dict, "tuple": tuple, "set": set,
     "enumerate": enumerate, "zip": zip, "sorted": sorted, "reversed": reversed,
     "any": any, "all": all, "round": round,
+    "__import__": __import__, 
 }
 
 def _set_limits(mem_bytes: int, cpu_seconds: int):
@@ -37,12 +38,12 @@ def run_in_sandbox(code: str, csv_path: str,
 
         # driver script (runs inside the same interpreter via -c)
         driver = f"""
-import json, io, contextlib, traceback, os
+import json, io, contextlib, traceback, os, builtins
 from pathlib import Path
 import pandas as pd
 
 SAFE = {list(SAFE_BUILTINS.keys())}
-g = {{'__builtins__':{{k:__builtins__[k] for k in SAFE}}}}
+g = {{'__builtins__': {{k: getattr(builtins, k) for k in SAFE}}}}
 g['df'] = pd.read_csv(os.environ['CSV_PATH'])
 
 code = Path(os.environ['USER_CODE']).read_text()
