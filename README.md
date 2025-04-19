@@ -53,7 +53,7 @@ conda activate csv_da
 export OPENAI_API_KEY="sk-…"
 ```
 
-## Choose your sandbox flavour
+## Choose your sandbox
 ### A) Docker (recommended)
     Gives the strongest isolation.
     Requires Docker daemon running and your user in the docker group
