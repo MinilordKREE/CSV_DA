@@ -27,8 +27,13 @@ print(
     else "⚠️  Docker not available → using **LOCAL** sandbox (limited isolation)."
 )
 
+if _USING_DOCKER:
+    from .sql_docker_runner import try_run_sql as _try_run_sql
+else:
+    from .sql_local_runner import try_run_sql as _try_run_sql
 
 run_in_sandbox = _backend.run_in_sandbox         
-try_run        = _backend.try_run                
+try_run        = _backend.try_run  
+try_run_sql = _try_run_sql         
 
-__all__ = ["run_in_sandbox", "try_run"]
+__all__ = ["run_in_sandbox", "try_run", "try_run_sql"]

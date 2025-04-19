@@ -18,6 +18,7 @@ RUN pip install --no-cache-dir pandas numpy matplotlib seaborn
 
 # Copy the sandbox entry script into the container
 COPY sandbox_entry.py /workspace/
+COPY sql_driver.py    /workspace/
 
 # Run the entry script when the container starts
 ENTRYPOINT ["python", "sandbox_entry.py"]

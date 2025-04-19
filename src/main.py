@@ -12,6 +12,10 @@ from .history import json_history as jh
 MAX_RETRY = 3
 session_tag = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
 
+
+mode = input("Choose mode - [p]ython (default) or [s]ql: ").strip().lower()
+is_sql = mode.startswith("s")
+
 def run_session(csv_path: str):
     # Load the CSV and generate a summary for the data
     _, summary = file_handler.load_csv(csv_path)
@@ -52,11 +56,12 @@ def run_session(csv_path: str):
         for attempt in range(1, MAX_RETRY + 1):
             # Generate code using the LLM
             if attempt == 1 or error is None:
-                msgs = builder.build_code_prompt(question, summary, memory_blob)
+                msgs = (builder.build_sql_prompt if is_sql else builder.build_code_prompt)(
+                        question, summary, memory_blob)
             else:
-                msgs = builder.build_debug_prompt(
-                    question, summary, error, last_code, memory_blob
-                )
+                msgs = (builder.build_sql_debug_prompt if is_sql else builder.build_debug_prompt)(
+                        question, summary, error, last_code, memory_blob)
+
             code = llm_wrapper.chat(msgs)
             last_code = code 
 
@@ -64,7 +69,13 @@ def run_session(csv_path: str):
             print(f"\nGenerated code (attempt {attempt}):\n{code}\n{'-'*40}")
             # Run the generated code in a sandbox environment
             # and capture the output
-            stdout, ret_obj, plots, error = sandbox_runner.try_run(code, csv_path)
+            # execute
+            if is_sql:
+                # db path is <csv>.db created earlier
+                db_path = Path(csv_path).with_suffix(".db")
+                stdout, ret_obj, plots, error = sandbox_runner.try_run_sql(code, db_path)
+            else:
+                stdout, ret_obj, plots, error = sandbox_runner.try_run(code, csv_path)
 
             output_preview = (
                 json.dumps(ret_obj, ensure_ascii=False) if ret_obj else ""

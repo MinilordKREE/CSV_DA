@@ -97,3 +97,25 @@ def build_answer_prompt(
         {"role": "system", "content": "You are an assistant who explains data insights clearly."},
         {"role": "user",   "content": "\n\n".join(parts)},
     ]
+
+def build_sql_prompt(question: str, summary: dict, memory="") -> list[dict]:
+    schema = _schema_from_summary(summary)
+    msg = (
+        (f"Conversation context:\n{memory}\n\n" if memory else "") +
+        "Table schema (JSON):\n" + json.dumps(schema, indent=2) +
+        f"\n\n**Task:** {question}\n\nWrite SQL now."
+    )
+    return [{"role": "system", "content": T.SYSTEM_SQL},
+            {"role": "user", "content": msg}]
+
+def build_sql_debug_prompt(question, summary, error, prev_sql, memory="") -> list[dict]:
+    schema = _schema_from_summary(summary)
+    msg = (
+        (f"History:\n{memory}\n\n" if memory else "") +
+        "The previous SQL was:\n```\n" + prev_sql + "\n```\n\n"
+        "Error:\n" + error + "\n\n" +
+        "Schema:\n" + json.dumps(schema, indent=2) +
+        f"\n\n**Task (retry):** {question}\n\nFix the SQL and return ONLY SQL."
+    )
+    return [{"role": "system", "content": T.SYSTEM_SQL},
+            {"role": "user", "content": msg}]

@@ -22,6 +22,26 @@ A pandas DataFrame named **df** is ALREADY in memory and contains the full CSV.
 Return **ONLY executable Python** - no markdown, no comments.
 """
 
+
+SYSTEM_SQL = """
+You are a text-to-SQL assistant.
+
+A SQLite table called `data` already exists and contains the full CSV.
+
+CONSTRAINTS
+• Write ONLY a single SELECT statement.
+• Do NOT use INSERT, UPDATE, DELETE, DROP, PRAGMA.
+• Alias computations clearly; the evaluator expects column names.
+
+RESULT CONTRACT
+• The query result will be converted to JSON and returned to the user.
+• If the user explicitly asks for a chart, also return two columns (x,y) that
+  can be plotted by the host.
+
+Return ONLY SQL - no comments, no markdown.
+"""
+
+
 ## Expected the output is Chinese
 ANSWER_TEMPLATE = (
     "📝 **User question**\n"

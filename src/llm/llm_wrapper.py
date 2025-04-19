@@ -15,7 +15,7 @@ else:  # huggingface
 
 
 # code is easily extracted due to the consistent formatting of the gpt output
-FENCE = re.compile(r"```(?:python)?\s*([\s\S]*?)```", re.I)
+FENCE = re.compile(r"```(?:python|sql)?\\s*([\\s\\S]*?)```", re.I)
 
 
 def chat(messages: List[dict]) -> str:
