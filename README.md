@@ -35,8 +35,14 @@ requirements.txt       ← python env
 **Quick Start**
 
 ```bash
-cd csv-da
+cd CSV‑DA
+```
 
+```bash
+# install the package
+pip install -r requirements.txt
+```
+```bash
 # export your openai api key first
 export OPENAI_API_KEY=""
 
