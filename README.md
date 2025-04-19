@@ -67,6 +67,7 @@ export OPENAI_API_KEY="sk-…"
     If the Docker daemon is missing, stopped, or the Python docker SDK cannot ping it, CSV‑DA automatically switches to a lightweight runner.
     Executes user code in a temporary folder.
 ```bash
+# no need for make docker
 (csv_da) $ python -m src.main # you will see:
 ⚠️  Docker not available → using **LOCAL** sandbox (limited isolation).
 ```
