@@ -48,18 +48,18 @@ def run_session(csv_path: str):
         )
 
         # Main loop to accept user questions and interact with the system
+        last_code = ""
         for attempt in range(1, MAX_RETRY + 1):
             # Generate code using the LLM
-            msgs = builder.build_code_prompt(question, summary, memory_blob)
             if attempt == 1 or error is None:
-                code = llm_wrapper.chat(msgs)
+                msgs = builder.build_code_prompt(question, summary, memory_blob)
             else:
-                dbg_msgs = builder.build_debug_prompt(
-                    question, summary, error, memory_blob
+                msgs = builder.build_debug_prompt(
+                    question, summary, error, last_code, memory_blob
                 )
-                code = llm_wrapper.chat(dbg_msgs)
-            hist.log_prompt(msgs[-1]["content"])
-            hist.log_response(code)
+            code = llm_wrapper.chat(msgs)
+            last_code = code 
+
 
             print(f"\nGenerated code (attempt {attempt}):\n{code}\n{'-'*40}")
             # Run the generated code in a sandbox environment

@@ -3,6 +3,7 @@ Run user-provided code in a sandboxed environment.
 """
 import json, io, contextlib, importlib.util, traceback, os, sys, types, uuid, inspect
 from pathlib import Path
+import pandas as pd 
 
 SAFE_BUILTINS = {
     "abs": abs, "min": min, "max": max, "sum": sum,
